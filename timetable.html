@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elon Musk Timeboxing Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', 'Pretendard', sans-serif; background-color: #f8fafc; }
+        .time-slot:hover { background-color: #f1f5f9; }
+        .focus-ring:focus { outline: none; ring: 2px; ring-color: #3b82f6; }
+        @media print {
+            .no-print { display: none; }
+            body { background-color: white; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200">
+        <!-- Header -->
+        <header class="bg-slate-900 text-white p-6 md:p-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight mb-2">TIMEBOXING PLANNER</h1>
+                    <p class="text-slate-400">의지가 아니라 시스템으로 시간을 설계하세요.</p>
+                </div>
+                <div class="flex gap-2 no-print">
+                    <button onclick="window.print()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors">
+                        <i class="fa-solid fa-print mr-2"></i>PDF 저장/인쇄
+                    </button>
+                    <button onclick="resetData()" class="px-4 py-2 bg-red-900/50 hover:bg-red-800 rounded-lg text-sm transition-colors">
+                        <i class="fa-solid fa-rotate mr-2"></i>초기화
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+            <!-- Left Section: Brain Dump & Big 3 -->
+            <div class="lg:col-span-4 p-6 md:p-8 bg-slate-50 border-r border-slate-200 space-y-8">
+
+                <!-- 1. Brain Dump -->
+                <section>
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center">
+                        <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] mr-2">01</span>
+                        Brain Dump
+                    </h2>
+                    <p class="text-xs text-slate-400 mb-3 italic">머릿속의 모든 할 일을 쏟아내세요 (자이가르닉 효과 차단)</p>
+                    <textarea id="brain-dump" class="w-full h-48 p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-900 resize-none text-sm leading-relaxed" placeholder="여기에 모든 할 일을 적으세요..."></textarea>
+                </section>
+
+                <!-- 2. Big 3 -->
+                <section>
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center">
+                        <span class="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] mr-2">02</span>
+                        Today's Big 3
+                    </h2>
+                    <p class="text-xs text-slate-400 mb-3 italic">가장 중요한 3가지 목표를 선정하세요</p>
+                    <div class="space-y-3">
+                        <input type="text" class="big3-input w-full p-3 rounded-xl border border-slate-200 focus:border-blue-500 font-semibold text-sm" placeholder="첫 번째 핵심 목표">
+                        <input type="text" class="big3-input w-full p-3 rounded-xl border border-slate-200 focus:border-blue-500 font-semibold text-sm" placeholder="두 번째 핵심 목표">
+                        <input type="text" class="big3-input w-full p-3 rounded-xl border border-slate-200 focus:border-blue-500 font-semibold text-sm" placeholder="세 번째 핵심 목표">
+                    </div>
+                </section>
+
+                <!-- 3. Reflection -->
+                <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center">
+                        <i class="fa-solid fa-chart-line mr-2 text-blue-500"></i>
+                        계획 오류 수정
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">예상 소요 시간</label>
+                            <input type="text" class="w-full text-sm border-b border-slate-200 py-1" placeholder="예: 3시간">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">실제 소요 시간</label>
+                            <input type="text" class="w-full text-sm border-b border-slate-200 py-1 font-bold text-blue-600" placeholder="기록해 보세요">
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Section: Timeboxing Table -->
+            <div class="lg:col-span-8 p-6 md:p-10">
+                <div class="flex justify-between items-end mb-6">
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center">
+                        <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] mr-2">03</span>
+                        Timeboxing Table
+                    </h2>
+                    <span id="current-date" class="text-sm text-slate-400 font-medium"></span>
+                </div>
+
+                <div class="border rounded-2xl overflow-hidden border-slate-200 shadow-inner bg-slate-50/30">
+                    <div class="grid grid-cols-12 bg-slate-100 border-b border-slate-200 py-2 px-4 font-bold text-[10px] text-slate-500 uppercase tracking-tighter">
+                        <div class="col-span-2">Time</div>
+                        <div class="col-span-10">Activity & Focus</div>
+                    </div>
+
+                    <div id="time-grid" class="divide-y divide-slate-100 bg-white h-[600px] overflow-y-auto">
+                        <!-- Time slots generated by JS -->
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-slate-900 text-white rounded-2xl">
+                    <h3 class="text-xs font-bold uppercase text-slate-400 mb-2 italic">Special Directive</h3>
+                    <p class="text-sm leading-relaxed opacity-90">
+                        "계획은 틀어지기 위해 존재합니다. 수정 능력이 의지보다 중요합니다. 예상치 못한 일을 처리할 <strong>버퍼 타임(Buffer Time)</strong>을 30분 이상 확보하세요."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set Today's Date
+        const dateEl = document.getElementById('current-date');
+        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+        dateEl.innerText = new Date().toLocaleDateString('ko-KR', options);
+
+        // Generate Time Grid (05:00 to 24:00)
+        const timeGrid = document.getElementById('time-grid');
+        for(let hour = 5; hour <= 24; hour++) {
+            const displayHour = hour === 24 ? "00" : (hour < 10 ? "0" + hour : hour);
+
+            // Generate 30min slots
+            ['00', '30'].forEach(min => {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 time-slot group transition-all';
+                row.innerHTML = `
+                    <div class="col-span-2 py-3 px-4 border-r border-slate-100 text-[11px] font-bold text-slate-400 group-hover:text-slate-900 transition-colors">
+                        ${displayHour}:${min}
+                    </div>
+                    <div class="col-span-10 flex">
+                        <input type="text" class="w-full py-3 px-4 text-sm focus:bg-blue-50/50 outline-none transition-all placeholder-slate-200" placeholder="...">
+                    </div>
+                `;
+                timeGrid.appendChild(row);
+            });
+        }
+
+        // Local Storage Sync
+        function saveData() {
+            const data = {
+                brainDump: document.getElementById('brain-dump').value,
+                big3: Array.from(document.querySelectorAll('.big3-input')).map(i => i.value),
+                timebox: Array.from(document.querySelectorAll('#time-grid input')).map(i => i.value)
+            };
+            localStorage.setItem('musk_timebox_data', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('musk_timebox_data');
+            if(saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('brain-dump').value = data.brainDump || "";
+
+                const big3Inputs = document.querySelectorAll('.big3-input');
+                if(data.big3) data.big3.forEach((val, i) => { if(big3Inputs[i]) big3Inputs[i].value = val; });
+
+                const timeboxInputs = document.querySelectorAll('#time-grid input');
+                if(data.timebox) data.timebox.forEach((val, i) => { if(timeboxInputs[i]) timeboxInputs[i].value = val; });
+            }
+        }
+
+        function resetData() {
+            if(confirm('모든 데이터를 초기화하시겠습니까?')) {
+                localStorage.removeItem('musk_timebox_data');
+                location.reload();
+            }
+        }
+
+        // Event Listeners for auto-save
+        document.addEventListener('input', () => {
+            saveData();
+        });
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
